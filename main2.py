@@ -135,13 +135,14 @@ config['minibatch_print'] = np.lcm(config['minibatch'], 1000)
 
 config['device'] = torch.device('cuda:0') if torch.cuda.is_available() \
     else torch.device('cpu')
+
     
 
 if __name__ == "__main__":
     
         
-    train_dataloader = torch.utils.data.DataLoader(dataset=TDemodulator(), shuffle=True)
-    test_dataloader = torch.utils.data.DataLoader(dataset=TDemodulator(), shuffle=True)
+    train_dataloader = torch.utils.data.DataLoader(dataset=KDemodulator(), shuffle=True)
+    test_dataloader = torch.utils.data.DataLoader(dataset=KDemodulator(), shuffle=True)
 
     config['loss_function'] = torch.nn.CrossEntropyLoss()
     config['train_val_split_function'] = train_val_split

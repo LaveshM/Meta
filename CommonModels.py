@@ -120,11 +120,23 @@ class KcNet(torch.nn.Module):
         return {
             'x1':output1, 
             'x2':output2}
-    
+
     def get_loss(self, logits, y):
-        loss1 = torch.nn.CrossEntropyLoss()(logits['x1'], y[:,0])
-        loss2 = torch.nn.CrossEntropyLoss()(logits['x2'], y[:,1])
+        
+        logits1 = torch.squeeze(logits['x1'])
+        logits2 = torch.squeeze(logits['x2'])
+        y = torch.squeeze(y).long()
+        loss1 = torch.nn.CrossEntropyLoss()(logits1, y[:,0])
+        loss2 = torch.nn.CrossEntropyLoss()(logits2, y[:,1])
         return loss1 + loss2
+    
+    def get_accuracy(self, logits, y):
+        logits1 = torch.squeeze(logits['x1'])
+        logits2 = torch.squeeze(logits['x2'])
+        y = torch.squeeze(y).long()
+        acc1 = (logits1.argmax(dim=1) == y[:,0]).float().mean().item()
+        acc2 = (logits2.argmax(dim=1) == y[:,1]).float().mean().item()
+        return (acc1 + acc2) / 2
      
 
 class CNN(torch.nn.Module):

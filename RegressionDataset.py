@@ -130,7 +130,6 @@ class TDemodulator(torch.utils.data.Dataset):
         self.x[:,1] = torch.tile(torch.FloatTensor([-1,1,-1,1]), (250,1)).reshape(-1)
         #divide by root 2
         self.x = self.x/np.sqrt(2)
-        
         self.fl = True
         
         
@@ -207,9 +206,8 @@ class KDemodulator(torch.utils.data.Dataset):
         self.x = torch.zeros((1000,2))
         noise = torch.FloatTensor(np.random.multivariate_normal(mean=np.zeros(2), cov=0.1 * np.eye(2), size=1000))
         self.x[:, 0] = h1[0] * self.labels[:,0,0] + h1[1] * self.labels[:,0,1]+ h2[0] * self.labels[:,1,0] + h2[1] * self.labels[:,1,1]+ noise[:,0]
+        #self.x[:, 1] = h1[0] * self.labels[:,0,0] + h1[1] * self.labels[:,0,1]+ h2[0] * self.labels[:,1,0] + h2[1] * self.labels[:,1,1]+ noise[:,1]
         self.x[:, 1] = noise[:,1]
-        
-
         return [self.x, self.y]
 
     def __len__(self) -> int:

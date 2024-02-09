@@ -76,9 +76,12 @@ class Maml(MLBaseClass):
             # # run to initialize lazy modules
             # base_net.forward(x_t)
             
-            split_data = self.config['train_val_split_function'](eps_data=eps_data, k_shot=self.config['k_shot'])
-            
-            base_net.forward(split_data['x_t'])
+            # split_data = self.config['train_val_split_function'](eps_data=eps_data, k_shot=self.config['k_shot'])
+            x = eps_data[0].to(self.config['device'])
+            x_t = x.to(self.config['device'])
+            # base_net.forward(split_data['x_t'])
+            base_net.to(self.config['device'])
+            base_net.forward(x_t)
             break
 
         params = torch.nn.utils.parameters_to_vector(parameters=base_net.parameters())
@@ -223,7 +226,8 @@ class Maml(MLBaseClass):
         loss = model['f_base_net'].get_loss(logits=logits, y=y_v)
         
 
-        accuracy = (logits.argmax(dim=1) == y_v).float().mean().item()
+        # accuracy = (logits.argmax(dim=1) == y_v).float().mean().item()
+        accuracy = model['f_base_net'].get_accuracy(logits=logits, y=y_v)
 
         return loss.item(), accuracy * 100
 
