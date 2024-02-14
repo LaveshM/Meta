@@ -2,6 +2,9 @@ import torch
 import typing
 import pickle
 import numpy as np
+from scipy.linalg import sqrtm, dft
+from numpy.random import default_rng
+import scipy.io as sio
 Bern = torch.distributions.bernoulli.Bernoulli(torch.tensor([0.5]))  # equal prob.
 
 class SineDataset(torch.utils.data.Dataset):
@@ -221,3 +224,110 @@ class KDemodulator(torch.utils.data.Dataset):
         encoded_labels = torch.tensor([mapping[tuple(pair.tolist())] for pair in pairs])
 
         return encoded_labels
+    
+
+class KKDemodulator(torch.utils.data.Dataset):
+    def __init__(self) -> None:
+        super().__init__()
+        self.k=2
+        self.N = 3200
+        self.y = torch.zeros((self.N,self.k))
+        for k in range(k):
+            self.y[:,k] = torch.arange(self.N)%4
+        
+        self.p = torch.zeros(self.N, dtype=complex)
+        self.p.real = torch.tile(torch.FloatTensor([-1,-1,1,1]), (250,1)).reshape(-1)
+        self.p.imag = torch.tile(torch.FloatTensor([-1,1,-1,1]), (250,1)).reshape(-1)
+        #identity matrix
+        self.R_uniform = 0.8 * torch.eye(self.k) + 0.3 * torch.ones(self.k,self.k)
+        
+    
+        
+    def __getitem__(self, index) -> typing.List[torch.Tensor]:
+        h1 = torch.complex(torch.randn(()), torch.randn(()))
+        h2 = torch.complex(torch.randn(()), torch.randn(()))
+        
+        self.x = torch.zeros((1000, 2))
+        noise = torch.FloatTensor(np.random.multivariate_normal(mean=np.zeros(2), cov=0.1 * np.eye(2), size=1000))
+        self.x[:, 0] = h1.real * self.labels[:, 0, 0] + h1.imag * self.labels[:, 0, 1] + h2.real * self.labels[:, 1, 0] + h2.imag * self.labels[:, 1, 1] + noise[:, 0]
+        self.x[:, 1] = noise[:, 1]
+        return [self.x, self.y]
+
+    def __len__(self) -> int:
+        return 100000
+    
+    def channel_generation_correlated(Ml, N, R_uniform, lsf):
+        rng = default_rng()
+        Gamma = np.zeros((N, Ml), dtype=complex)
+        Rg = np.zeros((Ml, Ml, N), dtype=complex)
+        Rh = np.zeros((Ml, Ml, N), dtype=complex)
+        H = np.zeros((Ml, N), dtype=complex)
+
+        Ar = 1 / np.sqrt(Ml) * dft(Ml)
+
+        for k in range(N):
+            Gamma[k, :] = lsf[k]
+            Rg[:, :, k] = np.diag(np.sqrt(Gamma[k, :])) @ R_uniform @ np.diag(np.sqrt(Gamma[k, :]))
+            Rh[:, :, k] = Ar @ Rg[:, :, k] @ Ar.conj().T
+            H[:, k] = np.squeeze(sqrtm(Rh[:, :, k]) @ (rng.standard_normal((Ml, 1)) + 1j * rng.standard_normal((Ml, 1))) / np.sqrt(2))
+
+        # Ha = Ar.conj().T @ H
+
+        return H
+    
+class KKDemodulator(torch.utils.data.Dataset):
+    def __init__(self) -> None:
+        super().__init__()
+        HH = sio.loadmat('H.mat')['H']
+        self.H = torch.tensor(HH, dtype=torch.complex64)
+        self.Ml = self.H.shape[0]
+        self.k = self.H.shape[1]
+        self.T = self.H.shape[2]
+        self.N = 3200
+        self.y = torch.zeros(self.N)
+        
+        self.y = torch.arange(self.N)%4
+        
+        self.p = torch.zeros(self.N, dtype=torch.complex64)
+        self.p.real = torch.tile(torch.FloatTensor([-1,-1,1,1]), (self.N//4,1)).reshape(-1)
+        self.p.imag = torch.tile(torch.FloatTensor([-1,1,-1,1]), (self.N//4,1)).reshape(-1)
+        #identity matrix
+        fll = True
+        if fll:
+            print('H',self.H.shape)
+            print('p',self.p.shape)
+            
+            fll = False
+            
+        
+        
+        
+    
+        
+    def __getitem__(self, index) -> typing.List[torch.Tensor]:
+        t = torch.randint(0,self.T,(1,))
+        h = torch.squeeze(self.H[:,:,t]).T
+        # change p vector to a random permutaion of itself
+        perm = torch.zeros( self.N, dtype=torch.int)
+        X = torch.zeros( self.N, self.k, dtype=torch.complex64)
+        labels = torch.zeros(self.N, self.k, dtype=torch.int)
+        for i in range(self.k):
+            perm = torch.randperm(self.N)
+            X[:,i] = self.p[perm]
+            labels[:,i] = self.y[perm]
+        #sample noise from a complex normal
+        
+        noise = torch.randn(self.N, self.Ml, dtype=torch.complex64)
+        res = X@h + 0.01* noise
+        #break res complex into real and imaginary parts
+        x = torch.zeros(self.N, 2*self.Ml)   
+        x[:,0:self.Ml] = res.real
+        x[:,self.Ml:] = res.imag
+        
+        
+        return [x, labels]
+
+    def __len__(self) -> int:
+        return 100000
+    
+    

@@ -48,7 +48,7 @@ import os
 import argparse
 
 # import regression data generator
-from RegressionDataset import SineDataset, LineDataset, TDemodulator, KDemodulator
+from RegressionDataset import SineDataset, LineDataset, TDemodulator, KDemodulator, KKDemodulator
 
 from _utils import train_val_split, train_val_split_regression
 
@@ -94,7 +94,7 @@ parser.add_argument("--dropout-prob", type=float, default=0, help="Dropout proba
 
 parser.add_argument('--num-ways', type=int, default=5, help='Number of classes within a task')
 
-parser.add_argument('--num-inner-updates', type=int, default=1, help='The number of gradient updates for episode adaptation')
+parser.add_argument('--num-inner-updates', type=int, default=5, help='The number of gradient updates for episode adaptation')
 parser.add_argument('--inner-lr', type=float, default=0.1, help='Learning rate of episode adaptation step')
 
 parser.add_argument('--logdir', type=str, default='.', help='Folder to store model and logs')
@@ -115,9 +115,9 @@ parser.set_defaults(train_flag=True)
 
 #parser.add_argument('--num-workers', type=int, default=2, help='Number of workers used in data loader')
 
-parser.add_argument('--num-models', type=int, default=1, help='Number of base network sampled from the hyper-net')
+parser.add_argument('--num-models', type=int, default=10, help='Number of base network sampled from the hyper-net')
 
-parser.add_argument('--num-episodes', type=int, default=10, help='Number of episodes used in testing')
+parser.add_argument('--num-episodes', type=int, default=100, help='Number of episodes used in testing')
 
 args = parser.parse_args()
 print()
@@ -141,8 +141,8 @@ config['device'] = torch.device('cuda:0') if torch.cuda.is_available() \
 if __name__ == "__main__":
     
         
-    train_dataloader = torch.utils.data.DataLoader(dataset=KDemodulator(), shuffle=True)
-    test_dataloader = torch.utils.data.DataLoader(dataset=KDemodulator(), shuffle=True)
+    train_dataloader = torch.utils.data.DataLoader(dataset=KKDemodulator(), shuffle=True)
+    test_dataloader = torch.utils.data.DataLoader(dataset=KKDemodulator(), shuffle=True)
 
     config['loss_function'] = torch.nn.CrossEntropyLoss()
     config['train_val_split_function'] = train_val_split

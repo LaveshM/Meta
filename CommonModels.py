@@ -92,17 +92,13 @@ class KcNet(torch.nn.Module):
         #Have multiple output layers for 2 labels
         
         
+        for i in range(10):
+            net.add_module(
+                name='classifier{0:d}'.format(i),
+                module=torch.nn.Linear(in_features=self.num_hidden_units[-1], out_features=self.dim_output) if self.dim_output is not None \
+                    else torch.nn.Identity()
+            )
         
-        net.add_module(
-            name='classifier1',
-            module=torch.nn.Linear(in_features=self.num_hidden_units[-1], out_features=self.dim_output) if self.dim_output is not None \
-                else torch.nn.Identity()
-        )
-        net.add_module(
-            name='classifier2',
-            module=torch.nn.Linear(in_features=self.num_hidden_units[-1], out_features=self.dim_output) if self.dim_output is not None \
-                else torch.nn.Identity()
-        )
 
 
         return net
@@ -110,33 +106,49 @@ class KcNet(torch.nn.Module):
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """"""
         # return self.fc_net(x)
+          
         x = getattr(self.fc_net, 'layer0')(x)
         
         for i in range(1, len(self.num_hidden_units)):
             x = getattr(self.fc_net, 'layer{0:d}'.format(i))(x)
 
-        output1 = self.fc_net.classifier1(x)
-        output2 = self.fc_net.classifier2(x)
-        return {
-            'x1':output1, 
-            'x2':output2}
+        #create an output dictionary
+        output = {}
+        for i in range(10):
+            output['x{0:d}'.format(i)] = getattr(self.fc_net, 'classifier{0:d}'.format(i))(x)
+        # output1 = self.fc_net.classifier1(x)
+        # output2 = self.fc_net.classifier2(x)
+        return output
 
     def get_loss(self, logits, y):
-        
-        logits1 = torch.squeeze(logits['x1'])
-        logits2 = torch.squeeze(logits['x2'])
         y = torch.squeeze(y).long()
-        loss1 = torch.nn.CrossEntropyLoss()(logits1, y[:,0])
-        loss2 = torch.nn.CrossEntropyLoss()(logits2, y[:,1])
-        return loss1 + loss2
+        loss = 0
+        
+        
+        for i in range(10): 
+            logs = logits['x{0:d}'.format(i)]
+        
+            loss = loss +torch.nn.CrossEntropyLoss()(logs, y[:,i])
+        # logits1 = torch.squeeze(logits['x1'])
+        # logits2 = torch.squeeze(logits['x2'])
+        # y = torch.squeeze(y).long()
+        # loss1 = torch.nn.CrossEntropyLoss()(logits1, y[:,0])
+        # loss2 = torch.nn.CrossEntropyLoss()(logits2, y[:,1])
+        return loss
     
     def get_accuracy(self, logits, y):
-        logits1 = torch.squeeze(logits['x1'])
-        logits2 = torch.squeeze(logits['x2'])
         y = torch.squeeze(y).long()
-        acc1 = (logits1.argmax(dim=1) == y[:,0]).float().mean().item()
-        acc2 = (logits2.argmax(dim=1) == y[:,1]).float().mean().item()
-        return (acc1 + acc2) / 2
+        acc=0
+        for i in range(10):
+            logs = torch.squeeze(logits['x{0:d}'.format(i)])
+            
+            acc = acc +(logs.argmax(dim=1) == y[:,i]).float().mean().item()
+        # logits1 = torch.squeeze(logits['x1'])
+        # logits2 = torch.squeeze(logits['x2'])
+        # y = torch.squeeze(y).long()
+        # acc1 = (logits1.argmax(dim=1) == y[:,0]).float().mean().item()
+        # acc2 = (logits2.argmax(dim=1) == y[:,1]).float().mean().item()
+        return acc/10
      
 
 class CNN(torch.nn.Module):
