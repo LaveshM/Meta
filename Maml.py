@@ -5,7 +5,7 @@ import os
 
 from MLBaseClass import MLBaseClass
 from HyperNetClasses import IdentityNet
-from CommonModels import CNN, ResNet18, FcNet, KcNet, ResNet10
+from CommonModels import CNN, ResNet18, FcNet, KcNet, ResNet10,LcNet
 import matplotlib.pyplot as plt
 
 class Maml(MLBaseClass):
@@ -58,6 +58,11 @@ class Maml(MLBaseClass):
             )
         elif self.config['network_architecture'] == 'KcNet':
             base_net = KcNet(
+                dim_output=self.config['num_ways'],
+                num_hidden_units=[30]
+            )
+        elif self.config['network_architecture'] == 'LcNet':
+            base_net = LcNet(
                 dim_output=self.config['num_ways'],
                 num_hidden_units=[30]
             )

@@ -226,54 +226,54 @@ class KDemodulator(torch.utils.data.Dataset):
         return encoded_labels
     
 
-class KKDemodulator(torch.utils.data.Dataset):
-    def __init__(self) -> None:
-        super().__init__()
-        self.k=2
-        self.N = 3200
-        self.y = torch.zeros((self.N,self.k))
-        for k in range(k):
-            self.y[:,k] = torch.arange(self.N)%4
+# class KKDemodulator(torch.utils.data.Dataset):
+#     def __init__(self) -> None:
+#         super().__init__()
+#         self.k=2
+#         self.N = 3200
+#         self.y = torch.zeros((self.N,self.k))
+#         for k in range(k):
+#             self.y[:,k] = torch.arange(self.N)%4
         
-        self.p = torch.zeros(self.N, dtype=complex)
-        self.p.real = torch.tile(torch.FloatTensor([-1,-1,1,1]), (250,1)).reshape(-1)
-        self.p.imag = torch.tile(torch.FloatTensor([-1,1,-1,1]), (250,1)).reshape(-1)
-        #identity matrix
-        self.R_uniform = 0.8 * torch.eye(self.k) + 0.3 * torch.ones(self.k,self.k)
+#         self.p = torch.zeros(self.N, dtype=complex)
+#         self.p.real = torch.tile(torch.FloatTensor([-1,-1,1,1]), (250,1)).reshape(-1)
+#         self.p.imag = torch.tile(torch.FloatTensor([-1,1,-1,1]), (250,1)).reshape(-1)
+#         #identity matrix
+#         self.R_uniform = 0.8 * torch.eye(self.k) + 0.3 * torch.ones(self.k,self.k)
         
     
         
-    def __getitem__(self, index) -> typing.List[torch.Tensor]:
-        h1 = torch.complex(torch.randn(()), torch.randn(()))
-        h2 = torch.complex(torch.randn(()), torch.randn(()))
+#     def __getitem__(self, index) -> typing.List[torch.Tensor]:
+#         h1 = torch.complex(torch.randn(()), torch.randn(()))
+#         h2 = torch.complex(torch.randn(()), torch.randn(()))
         
-        self.x = torch.zeros((1000, 2))
-        noise = torch.FloatTensor(np.random.multivariate_normal(mean=np.zeros(2), cov=0.1 * np.eye(2), size=1000))
-        self.x[:, 0] = h1.real * self.labels[:, 0, 0] + h1.imag * self.labels[:, 0, 1] + h2.real * self.labels[:, 1, 0] + h2.imag * self.labels[:, 1, 1] + noise[:, 0]
-        self.x[:, 1] = noise[:, 1]
-        return [self.x, self.y]
+#         self.x = torch.zeros((1000, 2))
+#         noise = torch.FloatTensor(np.random.multivariate_normal(mean=np.zeros(2), cov=0.1 * np.eye(2), size=1000))
+#         self.x[:, 0] = h1.real * self.labels[:, 0, 0] + h1.imag * self.labels[:, 0, 1] + h2.real * self.labels[:, 1, 0] + h2.imag * self.labels[:, 1, 1] + noise[:, 0]
+#         self.x[:, 1] = noise[:, 1]
+#         return [self.x, self.y]
 
-    def __len__(self) -> int:
-        return 100000
+#     def __len__(self) -> int:
+#         return 100000
     
-    def channel_generation_correlated(Ml, N, R_uniform, lsf):
-        rng = default_rng()
-        Gamma = np.zeros((N, Ml), dtype=complex)
-        Rg = np.zeros((Ml, Ml, N), dtype=complex)
-        Rh = np.zeros((Ml, Ml, N), dtype=complex)
-        H = np.zeros((Ml, N), dtype=complex)
+#     def channel_generation_correlated(Ml, N, R_uniform, lsf):
+#         rng = default_rng()
+#         Gamma = np.zeros((N, Ml), dtype=complex)
+#         Rg = np.zeros((Ml, Ml, N), dtype=complex)
+#         Rh = np.zeros((Ml, Ml, N), dtype=complex)
+#         H = np.zeros((Ml, N), dtype=complex)
 
-        Ar = 1 / np.sqrt(Ml) * dft(Ml)
+#         Ar = 1 / np.sqrt(Ml) * dft(Ml)
 
-        for k in range(N):
-            Gamma[k, :] = lsf[k]
-            Rg[:, :, k] = np.diag(np.sqrt(Gamma[k, :])) @ R_uniform @ np.diag(np.sqrt(Gamma[k, :]))
-            Rh[:, :, k] = Ar @ Rg[:, :, k] @ Ar.conj().T
-            H[:, k] = np.squeeze(sqrtm(Rh[:, :, k]) @ (rng.standard_normal((Ml, 1)) + 1j * rng.standard_normal((Ml, 1))) / np.sqrt(2))
+#         for k in range(N):
+#             Gamma[k, :] = lsf[k]
+#             Rg[:, :, k] = np.diag(np.sqrt(Gamma[k, :])) @ R_uniform @ np.diag(np.sqrt(Gamma[k, :]))
+#             Rh[:, :, k] = Ar @ Rg[:, :, k] @ Ar.conj().T
+#             H[:, k] = np.squeeze(sqrtm(Rh[:, :, k]) @ (rng.standard_normal((Ml, 1)) + 1j * rng.standard_normal((Ml, 1))) / np.sqrt(2))
 
-        # Ha = Ar.conj().T @ H
+#         # Ha = Ar.conj().T @ H
 
-        return H
+#         return H
     
 class KKDemodulator(torch.utils.data.Dataset):
     def __init__(self) -> None:
@@ -299,10 +299,6 @@ class KKDemodulator(torch.utils.data.Dataset):
             
             fll = False
             
-        
-        
-        
-    
         
     def __getitem__(self, index) -> typing.List[torch.Tensor]:
         t = torch.randint(0,self.T,(1,))

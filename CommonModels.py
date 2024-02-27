@@ -150,7 +150,109 @@ class KcNet(torch.nn.Module):
         # acc2 = (logits2.argmax(dim=1) == y[:,1]).float().mean().item()
         return acc/10
      
+class LcNet(torch.nn.Module):
+    """Simple fully connected network
+    """
+    def __init__(self, dim_output: typing.Optional[int] = None, num_hidden_units: typing.List[int] = (32, 32)) -> None:
+        """
+        Args:
 
+        """
+        super(LcNet, self).__init__()
+
+        self.dim_output = dim_output
+        self.num_hidden_units = num_hidden_units
+
+        self.fc_net = self.construct_network()
+
+    def construct_network(self):
+        """
+        """
+        net = torch.nn.Sequential()
+        net.add_module(
+            name='layer0',
+            module=torch.nn.Sequential(
+                torch.nn.LazyLinear(out_features=self.num_hidden_units[0]),
+                torch.nn.Tanh()
+            )
+        )
+
+        for i in range(1, len(self.num_hidden_units)):
+            net.add_module(
+                name='layer{0:d}'.format(i),
+                module=torch.nn.Sequential(
+                    torch.nn.Linear(in_features=self.num_hidden_units[i - 1], out_features=self.num_hidden_units[i]),
+                    torch.nn.Tanh()
+                )
+            )
+        #Have multiple output layers for 2 labels
+        
+        
+        # for i in range(10):
+            
+        #     net.add_module(
+        #         name='extra_layer{0:d}'.format(i),
+        #         module=torch.nn.Sequential(torch.nn.Linear(in_features=self.num_hidden_units[-1], out_features=self.num_hidden_units[-1]),
+        #             torch.nn.Tanh())
+        #     )
+        #     net.add_module(
+        #         name='classifier{0:d}'.format(i),
+        #         module=torch.nn.Linear(in_features=self.num_hidden_units[-1], out_features=self.dim_output) if self.dim_output is not None \
+        #             else torch.nn.Identity()
+        #     )
+        
+        self.extra_layers = torch.nn.ModuleList([
+            torch.nn.Sequential(
+                torch.nn.Linear(in_features=self.num_hidden_units[-1], out_features=self.dim_output),
+                torch.nn.Tanh()  # Add any activation function here if needed
+            ) for _ in range(10)
+        ])
+
+        return net
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """"""
+        # return self.fc_net(x)
+          
+        x = getattr(self.fc_net, 'layer0')(x)
+        
+        for i in range(1, len(self.num_hidden_units)):
+            x = getattr(self.fc_net, 'layer{0:d}'.format(i))(x)
+
+        output = {'x{0:d}'.format(i): extra_layer(x) for i, extra_layer in enumerate(self.extra_layers, 0)}
+        
+        return output
+
+    def get_loss(self, logits, y):
+        y = torch.squeeze(y).long()
+        loss = 0
+        
+        
+        for i in range(10): 
+            logs = logits['x{0:d}'.format(i)]
+        
+            loss = loss +torch.nn.CrossEntropyLoss()(logs, y[:,i])
+        # logits1 = torch.squeeze(logits['x1'])
+        # logits2 = torch.squeeze(logits['x2'])
+        # y = torch.squeeze(y).long()
+        # loss1 = torch.nn.CrossEntropyLoss()(logits1, y[:,0])
+        # loss2 = torch.nn.CrossEntropyLoss()(logits2, y[:,1])
+        return loss
+    
+    def get_accuracy(self, logits, y):
+        y = torch.squeeze(y).long()
+        acc=0
+        for i in range(10):
+            logs = torch.squeeze(logits['x{0:d}'.format(i)])
+            
+            acc = acc +(logs.argmax(dim=1) == y[:,i]).float().mean().item()
+        # logits1 = torch.squeeze(logits['x1'])
+        # logits2 = torch.squeeze(logits['x2'])
+        # y = torch.squeeze(y).long()
+        # acc1 = (logits1.argmax(dim=1) == y[:,0]).float().mean().item()
+        # acc2 = (logits2.argmax(dim=1) == y[:,1]).float().mean().item()
+        return acc/10
+   
 class CNN(torch.nn.Module):
     """A simple convolutional module networks
     """
