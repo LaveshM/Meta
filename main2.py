@@ -5,7 +5,7 @@ python main2.py --ml-algorithm MAML --first-order --network-architecture FcNet -
 python3 main.py --datasource omniglot --img-size 32 --img-size 32 --ml-algorithm MAML --first-order --network-architecture CNN --no-batchnorm --num-ways 5 --k-shot 1 --v-shot 15 --inner-lr 0.1 --num-inner-updates 5 --meta-lr 1e-3 --num-epochs 20 --resume-epoch 0 --train
 
 python3 main.py --datasource miniImageNet --img-size 84 --img-size 84 --ml-algorithm MAML --first-order --network-architecture ResNet10 --no-batchnorm --num-ways 5 --inner-lr 0.1 --num-inner-updates 5 --meta-lr 1e-3 --num-epochs 1 --resume-epoch 0 --train
-python main2.py --ml-algorithm MAML --first-order --network-architecture FcNet --no-batchnorm --num-ways 4 --k-shot 1 --num-epochs 100 --resume-epoch 0 --train
+python main2.py --ml-algorithm MAML --first-order --network-architecture LcNet --no-batchnorm --num-ways 4 --k-shot 1 --num-epochs 100 --resume-epoch 0 --train
 
 # VAMPIRE2
 python main.py --datasource SineLine --ml-algorithm vampire2 --num-models 4 --first-order --network-architecture FcNet --no-batchnorm --num-ways 1 --k-shot 5 --inner-lr 0.001 --meta-lr 0.001 --num-epochs 100 --resume-epoch 0 --train
@@ -94,12 +94,12 @@ parser.add_argument("--dropout-prob", type=float, default=0, help="Dropout proba
 
 parser.add_argument('--num-ways', type=int, default=5, help='Number of classes within a task')
 
-parser.add_argument('--num-inner-updates', type=int, default=5, help='The number of gradient updates for episode adaptation')
+parser.add_argument('--num-inner-updates', type=int, default=2, help='The number of gradient updates for episode adaptation')
 parser.add_argument('--inner-lr', type=float, default=0.1, help='Learning rate of episode adaptation step')
 
 parser.add_argument('--logdir', type=str, default='.', help='Folder to store model and logs')
 
-parser.add_argument('--meta-lr', type=float, default=1e-3, help='Learning rate for meta-update')
+parser.add_argument('--meta-lr', type=float, default=1e-4, help='Learning rate for meta-update')
 parser.add_argument('--minibatch', type=int, default=10, help='Minibatch of episodes to update meta-parameters')
 
 parser.add_argument('--k-shot', type=int, default=1, help='Number of training examples per class')
