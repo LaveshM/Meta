@@ -66,6 +66,7 @@ class KcNet(torch.nn.Module):
 
         self.dim_output = dim_output
         self.num_hidden_units = num_hidden_units
+        self.noutputs = 10
 
         self.fc_net = self.construct_network()
 
@@ -92,7 +93,7 @@ class KcNet(torch.nn.Module):
         #Have multiple output layers for 2 labels
         
         
-        for i in range(10):
+        for i in range(self.noutputs):
             net.add_module(
                 name='classifier{0:d}'.format(i),
                 module=torch.nn.Linear(in_features=self.num_hidden_units[-1], out_features=self.dim_output) if self.dim_output is not None \
@@ -114,7 +115,7 @@ class KcNet(torch.nn.Module):
 
         #create an output dictionary
         output = {}
-        for i in range(10):
+        for i in range(self.noutputs):
             output['x{0:d}'.format(i)] = getattr(self.fc_net, 'classifier{0:d}'.format(i))(x)
         # output1 = self.fc_net.classifier1(x)
         # output2 = self.fc_net.classifier2(x)
@@ -125,7 +126,7 @@ class KcNet(torch.nn.Module):
         loss = 0
         
         
-        for i in range(10): 
+        for i in range(self.noutputs): 
             logs = logits['x{0:d}'.format(i)]
         
             loss = loss +torch.nn.CrossEntropyLoss()(logs, y[:,i])
@@ -139,7 +140,7 @@ class KcNet(torch.nn.Module):
     def get_accuracy(self, logits, y):
         y = torch.squeeze(y).long()
         acc=0
-        for i in range(10):
+        for i in range(self.noutputs):
             logs = torch.squeeze(logits['x{0:d}'.format(i)])
             
             acc = acc +(logs.argmax(dim=1) == y[:,i]).float().mean().item()
@@ -148,7 +149,7 @@ class KcNet(torch.nn.Module):
         # y = torch.squeeze(y).long()
         # acc1 = (logits1.argmax(dim=1) == y[:,0]).float().mean().item()
         # acc2 = (logits2.argmax(dim=1) == y[:,1]).float().mean().item()
-        return acc/10
+        return acc/self.noutputs
      
 class LcNet(torch.nn.Module):
     """Simple fully connected network
@@ -163,7 +164,7 @@ class LcNet(torch.nn.Module):
         self.dim_output = dim_output
         self.num_hidden_units = num_hidden_units
         self.dim_hidden = 8
-
+        self.noutputs = 10
         self.fc_net = self.construct_network()
 
     def construct_network(self):
@@ -189,7 +190,7 @@ class LcNet(torch.nn.Module):
         #Have multiple output layers for 2 labels
         
         
-        # for i in range(10):
+        # for i in range(self.noutputs):
             
         #     net.add_module(
         #         name='extra_layer{0:d}'.format(i),
@@ -208,7 +209,7 @@ class LcNet(torch.nn.Module):
                 torch.nn.Tanh(),  # Add any activation function here if needed
                 torch.nn.Linear(in_features=self.dim_hidden, out_features=self.dim_output),
                 torch.nn.Tanh()  # Add any activation function here if needed
-            ) for _ in range(10)
+            ) for _ in range(self.noutputs)
         ])
 
         return net
@@ -231,7 +232,7 @@ class LcNet(torch.nn.Module):
         loss = 0
         
         
-        for i in range(10): 
+        for i in range(self.noutputs): 
             logs = logits['x{0:d}'.format(i)]
         
             loss = loss +torch.nn.CrossEntropyLoss()(logs, y[:,i])
@@ -245,7 +246,7 @@ class LcNet(torch.nn.Module):
     def get_accuracy(self, logits, y):
         y = torch.squeeze(y).long()
         acc=0
-        for i in range(10):
+        for i in range(self.noutputs):
             logs = torch.squeeze(logits['x{0:d}'.format(i)])
             
             acc = acc +(logs.argmax(dim=1) == y[:,i]).float().mean().item()
@@ -254,7 +255,7 @@ class LcNet(torch.nn.Module):
         # y = torch.squeeze(y).long()
         # acc1 = (logits1.argmax(dim=1) == y[:,0]).float().mean().item()
         # acc2 = (logits2.argmax(dim=1) == y[:,1]).float().mean().item()
-        return acc/10
+        return acc/self.noutputs
    
 class CNN(torch.nn.Module):
     """A simple convolutional module networks

@@ -5,7 +5,7 @@ python main2.py --ml-algorithm MAML --first-order --network-architecture FcNet -
 python3 main.py --datasource omniglot --img-size 32 --img-size 32 --ml-algorithm MAML --first-order --network-architecture CNN --no-batchnorm --num-ways 5 --k-shot 1 --v-shot 15 --inner-lr 0.1 --num-inner-updates 5 --meta-lr 1e-3 --num-epochs 20 --resume-epoch 0 --train
 
 python3 main.py --datasource miniImageNet --img-size 84 --img-size 84 --ml-algorithm MAML --first-order --network-architecture ResNet10 --no-batchnorm --num-ways 5 --inner-lr 0.1 --num-inner-updates 5 --meta-lr 1e-3 --num-epochs 1 --resume-epoch 0 --train
-python main2.py --ml-algorithm MAML --first-order --network-architecture LcNet --no-batchnorm --num-ways 4 --k-shot 1 --num-epochs 100 --resume-epoch 0 --train
+python main2.py --ml-algorithm MAML --first-order --network-architecture LcNet --no-batchnorm --num-ways 4 --k-shot 5 --num-epochs 100 --resume-epoch 0 --train
 
 # VAMPIRE2
 python main.py --datasource SineLine --ml-algorithm vampire2 --num-models 4 --first-order --network-architecture FcNet --no-batchnorm --num-ways 1 --k-shot 5 --inner-lr 0.001 --meta-lr 0.001 --num-epochs 100 --resume-epoch 0 --train

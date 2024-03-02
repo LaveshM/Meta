@@ -278,7 +278,7 @@ class KDemodulator(torch.utils.data.Dataset):
 class KKDemodulator(torch.utils.data.Dataset):
     def __init__(self) -> None:
         super().__init__()
-        HH = sio.loadmat('H5.mat')['H']
+        HH = sio.loadmat('Hless.mat')['H']
         self.H = torch.tensor(HH, dtype=torch.complex64)
         self.Ml = self.H.shape[0]
         self.k = self.H.shape[1]
@@ -298,25 +298,30 @@ class KKDemodulator(torch.utils.data.Dataset):
             print('p',self.p.shape)
             
             fll = False
-        self.t = torch.randint(0,self.T,(1,))
         
             
         
     def __getitem__(self, index) -> typing.List[torch.Tensor]:
-        self.t = (self.t+1)%10000
+        # self.t = (self.t+1)%10000
+        self.t = torch.randint(0,self.T,(1,))
+        
         h = torch.squeeze(self.H[:,:,self.t]).T
         # change p vector to a random permutaion of itself
         perm = torch.zeros( self.N, dtype=torch.int)
         X = torch.zeros( self.N, self.k, dtype=torch.complex64)
         labels = torch.zeros(self.N, self.k, dtype=torch.int)
-        for i in range(self.k):
-            perm = torch.randperm(self.N)
-            X[:,i] = self.p[perm]
-            labels[:,i] = self.y[perm]
+        # for i in range(self.k):
+        #     perm = torch.randperm(self.N)
+        #     X[:,i] = self.p[perm]
+        #     labels[:,i] = self.y[perm]
         #sample noise from a complex normal
+        # X is k copies of p
+        X = torch.tile(self.p, (self.k,1)).T
+        labels = torch.tile(self.y, (self.k,1)).T
+        
         
         noise = torch.randn(self.N, self.Ml, dtype=torch.complex64)
-        res = X@h + 0.01* noise
+        res = X@h + 0.001* noise
         #break res complex into real and imaginary parts
         x = torch.zeros(self.N, 2*self.Ml)   
         x[:,0:self.Ml] = res.real

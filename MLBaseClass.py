@@ -162,12 +162,13 @@ class MLBaseClass(object):
                     # split data into train and validation
                     x = eps_data[0].squeeze()
                     y = eps_data[1].squeeze()
+                    k_shot=self.config['k_shot']
                     
                     # move data to GPU (if there is a GPU)
-                    x_t = x[:10,:].to(self.config['device']).squeeze()
-                    y_t = y[:10,:].to(self.config['device']).squeeze()
-                    x_v = x[10:,:].to(self.config['device']).squeeze()
-                    y_v = y[10:,:].to(self.config['device']).squeeze()
+                    x_t = x[:k_shot,:].to(self.config['device']).squeeze()
+                    y_t = y[:k_shot,:].to(self.config['device']).squeeze()
+                    x_v = x[k_shot:,:].to(self.config['device']).squeeze()
+                    y_v = y[k_shot:,:].to(self.config['device']).squeeze()
                     
                     #split_data = self.config['train_val_split_function'](eps_data=eps_data, k_shot=self.config['k_shot'])
                     
@@ -281,12 +282,13 @@ class MLBaseClass(object):
             # split data into train and validation
             x = eps_data[0].squeeze()
             y = eps_data[1].squeeze()
+            k_shot=self.config['k_shot']
             
             # move data to GPU (if there is a GPU)
-            x_t = x[:10,:].to(self.config['device']).squeeze()
-            y_t = y[:10,:].to(self.config['device']).squeeze()
-            x_v = x[10:,:].to(self.config['device']).squeeze()
-            y_v = y[10:,:].to(self.config['device']).squeeze()
+            x_t = x[:k_shot,:].to(self.config['device']).squeeze()
+            y_t = y[:k_shot,:].to(self.config['device']).squeeze()
+            x_v = x[k_shot:,:].to(self.config['device']).squeeze()
+            y_v = y[k_shot:,:].to(self.config['device']).squeeze()
 
             loss[eps_id], accuracy[eps_id] = self.evaluation(x_t=x_t, y_t=y_t, x_v=x_v, y_v=y_v, model=model)
 
