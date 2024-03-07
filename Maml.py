@@ -64,7 +64,7 @@ class Maml(MLBaseClass):
         elif self.config['network_architecture'] == 'LcNet':
             base_net = LcNet(
                 dim_output=self.config['num_ways'],
-                num_hidden_units=[16]
+                num_hidden_units=self.config['num_hidden_units']
             )
         else:
             raise NotImplementedError('Network architecture is unknown. Please implement it in the CommonModels.py.')

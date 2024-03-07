@@ -242,9 +242,15 @@ class MLBaseClass(object):
                 }
                 checkpoint_path = os.path.join(self.config['logdir'], 'Epoch_{0:d}.pt'.format(epoch_id + 1))
                 torch.save(obj=checkpoint, f=checkpoint_path)
-                print('State dictionaries are saved into {0:s}\n'.format(checkpoint_path))
-                if epoch_id > 5:
-                    config['meta-lr'] = 1e-4
+                print('State dictionaries are saved into {0:s}'.format(checkpoint_path))
+                print('meta-lr:',self.config['meta_lr'],', inner-lr:',self.config['inner_lr'],', num_inner_updates:',self.config['num_inner_updates'])
+                print('arc:',self.config['num_hidden_units'],'\n')
+                if epoch_id > 1:
+                    config['meta-lr'] = 1e-3
+                if epoch_id >5:
+                    config['meta-lr'] = 5e-4
+                if epoch_id >10:
+                    config['meta-lr'] = 5e-5
                     
 
             print('Training is completed.')

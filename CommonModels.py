@@ -163,8 +163,8 @@ class LcNet(torch.nn.Module):
 
         self.dim_output = dim_output
         self.num_hidden_units = num_hidden_units
-        self.dim_hidden = 8
-        self.noutputs = 10
+        self.dim_hidden = [8,8]
+        self.noutputs = 4
         self.fc_net = self.construct_network()
 
     def construct_network(self):
@@ -205,9 +205,11 @@ class LcNet(torch.nn.Module):
         
         self.extra_layers = torch.nn.ModuleList([
             torch.nn.Sequential(
-                torch.nn.Linear(in_features=self.num_hidden_units[-1], out_features=self.dim_hidden),
+                torch.nn.Linear(in_features=self.num_hidden_units[-1], out_features=self.dim_hidden[0]),
                 torch.nn.Tanh(),  # Add any activation function here if needed
-                torch.nn.Linear(in_features=self.dim_hidden, out_features=self.dim_output),
+                torch.nn.Linear(in_features=self.dim_hidden[0], out_features=self.dim_hidden[1]),
+                torch.nn.Tanh(),
+                torch.nn.Linear(in_features=self.dim_hidden[1], out_features=self.dim_output),
                 torch.nn.Tanh()  # Add any activation function here if needed
             ) for _ in range(self.noutputs)
         ])

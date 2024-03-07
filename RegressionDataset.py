@@ -276,14 +276,17 @@ class KDemodulator(torch.utils.data.Dataset):
 #         return H
     
 class KKDemodulator(torch.utils.data.Dataset):
-    def __init__(self) -> None:
+    def __init__(self, train:bool) -> None:
         super().__init__()
-        HH = sio.loadmat('Hless.mat')['H']
+        if train:
+            HH = sio.loadmat('Hequal.mat')['H']
+        else:
+            HH = sio.loadmat('Hequal2.mat')['H']
         self.H = torch.tensor(HH, dtype=torch.complex64)
         self.Ml = self.H.shape[0]
         self.k = self.H.shape[1]
         self.T = self.H.shape[2]
-        self.N = 3200
+        self.N = 6400
         self.y = torch.zeros(self.N)
         
         self.y = torch.arange(self.N)%4
@@ -307,21 +310,22 @@ class KKDemodulator(torch.utils.data.Dataset):
         
         h = torch.squeeze(self.H[:,:,self.t]).T
         # change p vector to a random permutaion of itself
-        perm = torch.zeros( self.N, dtype=torch.int)
+        perm = torch.zeros(self.N, dtype=torch.int)
         X = torch.zeros( self.N, self.k, dtype=torch.complex64)
         labels = torch.zeros(self.N, self.k, dtype=torch.int)
-        # for i in range(self.k):
-        #     perm = torch.randperm(self.N)
-        #     X[:,i] = self.p[perm]
-        #     labels[:,i] = self.y[perm]
-        #sample noise from a complex normal
+        for i in range(self.k):
+            perm = torch.randperm(self.N)
+            X[:,i] = self.p[perm]
+            X[0,i] = self.p[0]
+            labels[:,i] = self.y[perm]
+            labels[0,i] = self.y[0]
         # X is k copies of p
-        X = torch.tile(self.p, (self.k,1)).T
-        labels = torch.tile(self.y, (self.k,1)).T
+        # X = torch.tile(self.p, (self.k,1)).T
+        # labels = torch.tile(self.y, (s elf.k,1)).T
         
         
         noise = torch.randn(self.N, self.Ml, dtype=torch.complex64)
-        res = X@h + 0.001* noise
+        res = X@h + 0.01* noise
         #break res complex into real and imaginary parts
         x = torch.zeros(self.N, 2*self.Ml)   
         x[:,0:self.Ml] = res.real
